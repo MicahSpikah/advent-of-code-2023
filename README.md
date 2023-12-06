@@ -7,3 +7,5 @@ Then run by passing the input file as a command line parameter: `./a.out 3.txt`
 To get an input to use with the day, go to www.adventofcode.com
 
 NOTE: I don't have source for days 1 and 2 because I solved those with vim macros
+
+ALSO NOTE: Apple Clang didn't have some stuff I wanted (e.g. std::ranges::to) so I'm using clang++ 17
