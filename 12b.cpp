@@ -118,7 +118,6 @@ advent_t advent( std::vector< std::string > const& input )
         thingy t( line );
 
         auto const possible = try_possible( t );
-        std::cout << std::to_string( possible ) << '\n';
 
         sum += possible;
     }
