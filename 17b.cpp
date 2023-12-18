@@ -12,7 +12,7 @@ enum dir
     right
 };
 
-constexpr std::size_t max_count = 3;
+constexpr std::size_t max_count = 10;
 
 using tile =
     std::map< dir, std::array< std::uint64_t, max_count > >;
@@ -44,58 +44,23 @@ struct problem
 
         bool improvement{};
         heat_loss += static_cast< std::uint64_t >( input[ row ][ col ] - '0' );
-        for( auto c = count; c < max_count; ++c )
+        auto c = count;
+        if( heat_loss < tiles[ row ][ col ][ v ][ c ] )
         {
-            if( heat_loss < tiles[ row ][ col ][ v ][ c ] )
-            {
-                tiles[ row ][ col ][ v ][ c ] = heat_loss;
-                improvement                   = true;
-            }
+            tiles[ row ][ col ][ v ][ c ] = heat_loss;
+            improvement                   = true;
         }
         if( !improvement )
             return;
 
-        if( v != up )
+        if( v != up && ( v == down || count >= 3 ) )
             grow( row + 1, col, down, ( v == down ) ? ( count + 1 ) : 0, heat_loss );
-        if( v != right )
+        if( v != right && ( v == left || count >= 3 ) )
             grow( row, col - 1, left, ( v == left ) ? ( count + 1 ) : 0, heat_loss );
-        if( v != down )
+        if( v != down && ( v == up || count >= 3 ) )
             grow( row - 1, col, up, ( v == up ) ? ( count + 1 ) : 0, heat_loss );
-        if( v != left )
+        if( v != left && ( v == right || count >= 3 ) )
             grow( row, col + 1, right, ( v == right ) ? ( count + 1 ) : 0, heat_loss );
-    }
-
-    void report( int row, int col )
-    {
-        if( row == 0 && col == 0 )
-            return;
-        auto min_heat_loss = std::numeric_limits< std::uint64_t >::max();
-        for( auto const v : { up, down, left, right } )
-            for( auto const c : tiles[ row ][ col ][ v ] )
-                min_heat_loss = std::min( min_heat_loss, c );
-        std::cerr << "Best at " << row << ", " << col << " is " << min_heat_loss;
-        if( tiles[ row ][ col ][ up ].back() == min_heat_loss )
-        {
-            std::cerr << " from down\n";
-            report( row + 1, col );
-        }
-        else if( tiles[ row ][ col ][ down ].back() == min_heat_loss )
-        {
-            std::cerr << " from up\n";
-            report( row - 1, col );
-        }
-        else if( tiles[ row ][ col ][ left ].back() == min_heat_loss )
-        {
-            std::cerr << " from right\n";
-            report( row, col + 1 );
-        }
-        else if( tiles[ row ][ col ][ right ].back() == min_heat_loss )
-        {
-            std::cerr << " from left\n";
-            report( row, col - 1 );
-        }
-        else
-            throw std::runtime_error( "Why" );
     }
 
     std::vector< std::string > const& input;
@@ -106,9 +71,13 @@ advent_t advent( std::vector< std::string > const& input )
 {
     problem p( input );
 
-    // p.report( input.size() - 1, input.front().size() - 1 );
+    std::uint64_t min = std::numeric_limits< std::uint64_t >::max();
 
-    return std::min(
-        p.tiles[ input.size() - 1 ][ input.front().size() - 1 ][ down ].back(),
-        p.tiles[ input.size() - 1 ][ input.front().size() - 1 ][ right ].back() );
+    for( int c = 3; c < max_count; ++c )
+    {
+        min = std::min( min, p.tiles[ input.size() - 1 ][ input.front().size() - 1 ][ down ][ c ] );
+        min = std::min( min, p.tiles[ input.size() - 1 ][ input.front().size() - 1 ][ right ][ c ] );
+    }
+
+    return min;
 }
